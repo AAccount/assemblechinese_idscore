@@ -1,11 +1,6 @@
 package dt.idsparser;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -40,7 +35,7 @@ public class IdsParser
   public Map<Integer, List<Integer>> parse(Path filePath) throws IOException
   {
     final int[] symlinks = new int[150];
-    final Map<Integer, List<Integer>> parts = new HashMap<>();
+    final Map<Integer, List<Integer>> disassembly = new HashMap<>();
 
     // assembly metadata ⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿼⿽⿻㇯⿾⿿〾
     try (Stream<String> lines = Files.lines(filePath)) 
@@ -53,11 +48,11 @@ public class IdsParser
 
         if(line.startsWith("#\t{"))
         {
-          parseSymlink(line, symlinks, parts);
+          parseSymlink(line, symlinks, disassembly);
         }
         else if(line.startsWith("U+"))
         {
-          parseEntry(line, symlinks, parts);
+          parseEntry(line, symlinks, disassembly);
         }
       });
     }
@@ -70,15 +65,16 @@ public class IdsParser
       }
     }
 
-    for(final Integer character: parts.keySet())
+    for(final Integer character: disassembly.keySet())
     {
       final StringBuilder sb = new StringBuilder();
       sb.append(Character.toString(character)).append(" : ");
-      final List<Integer> disassembly = parts.get(character);
-      for(final Integer part : disassembly)
+      final List<Integer> parts = disassembly.get(character);
+      for(final Integer part : parts)
       {
         sb.append(Character.toString(part)).append(' ');
       }
+      System.out.println(sb.toString());
     }
 
     // for(final Integer character : parts.keySet())
@@ -92,25 +88,25 @@ public class IdsParser
     //     }
     //   }
     // }
-    return parts;
+    return disassembly;
   }
 
-  private void parseEntry (String line, int[] symlinks, Map<Integer, List<Integer>> parts)
+  private void parseEntry (String line, int[] symlinks, Map<Integer, List<Integer>> disassembly)
   {
-    final String[] lineParts = line.split("\t");
-    final int character = lineParts[1].codePointAt(0);
+    final String[] tokens = line.split("\t");
+    final int character = tokens[1].codePointAt(0);
     final List<Integer> allParts = new ArrayList<>();
-    for(int i=2; i<lineParts.length; i++)
+    for(int i=2; i<tokens.length; i++)
     {
-      final String rawDisassembly = lineParts[i];
+      final String rawDisassembly = tokens[i];
       final int start = rawDisassembly.indexOf('^')+1;
       final int end = rawDisassembly.indexOf('$');
-      allParts.addAll(extractParts(rawDisassembly, symlinks, start, end));
+      allParts.addAll(parseDisassembly(rawDisassembly, symlinks, start, end));
     }
-    parts.put(character, allParts);
+    disassembly.put(character, allParts);
   }
 
-  private void parseSymlink(String line, int[] symlinks, Map<Integer, List<Integer>> parts)
+  private void parseSymlink(String line, int[] symlinks, Map<Integer, List<Integer>> disassembly)
   {
     final int curlyOpen = line.indexOf('{');
     final int curlyClose = line.indexOf('}');
@@ -138,14 +134,14 @@ public class IdsParser
       return;
     }
 
-    final List<Integer> lineParts = extractParts(line, symlinks, lastBracket+2, line.length());
-    if(!lineParts.isEmpty())
+    final List<Integer> symlinkParts = parseDisassembly(line, symlinks, lastBracket+2, line.length());
+    if(!symlinkParts.isEmpty())
     {
-      parts.put(part, lineParts);
+      disassembly.put(part, symlinkParts);
     }
   }
 
-  private List<Integer> extractParts(String s, int[] symlinks, int start, int end)
+  private List<Integer> parseDisassembly(String s, int[] symlinks, int start, int end)
   {
     if(s.codePointAt(start) == NO_DISASSEMBLY)
     {
