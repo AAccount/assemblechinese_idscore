@@ -1,4 +1,4 @@
-package dt.idsparser;
+package dt.ids.parser;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,34 +10,42 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+import static java.util.Map.entry; // Static import makes the code cleaner
 
 public class IdsParser 
 {
   private final static Set<Integer> POS_METADATA = new HashSet<>();
-  private static final Map<Integer, Integer> PART_SWAP = Map.of(
-    // Creating 2 separate versions of the same part may be useful for font rendering, but not for visual assembly purposes.
-    cpOf("牜"), cpOf("牛"),
-    cpOf("𤣩"), cpOf("王"),
-    cpOf("糹"), cpOf("糸"),
-    cpOf("訁"), cpOf("言"),
-    cpOf("釒"), cpOf("金"),
-    cpOf("飠"), cpOf("食"),
-    cpOf("孑"), cpOf("子"),
-    cpOf("⺶"), cpOf("羊")
+  
+  // Creating 2 separate versions of the same part may be useful for font rendering, but not for visual assembly purposes.
+  private static final Map<Integer, Integer> PART_SWAP = Map.ofEntries(
+    entry(cpOf("牜"), cpOf("牛")),
+    entry(cpOf("𤣩"), cpOf("王")),
+    entry(cpOf("糹"), cpOf("糸")),
+    entry(cpOf("訁"), cpOf("言")),
+    entry(cpOf("釒"), cpOf("金")),
+    entry(cpOf("飠"), cpOf("食")),
+    entry(cpOf("孑"), cpOf("子")),
+    entry(cpOf("⺶"), cpOf("羊")), // entries below here are manually added
+    entry(cpOf("口"), cpOf("囗")),
+    entry(cpOf("⺼"), cpOf("月")),
+    entry(cpOf("⺝"), cpOf("月")),
+    entry(cpOf("土"), cpOf("士")),
+    entry(cpOf("𫜹"), cpOf("")), // there are 3 of these including symlink 42 and 43. using 42 
+    entry(cpOf("卝"), cpOf("艹")), // ++ variant used in　罐 and other non plant related
+    entry(cpOf("𠕁"), cpOf("冊"))
   );
-  private static final int NO_DISASSEMBLY = "？".codePointAt(0);
+  private static final int NO_DISASSEMBLY = cpOf("？");
   static
   {
-    final String metadata = "⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿼⿽⿻㇯⿾⿿〾";
+    final String metadata = "⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿼⿽⿻⿾⿿〾㇯";
     metadata.codePoints().forEach(cp -> POS_METADATA.add(cp));
   }
 
-  public Map<Integer, List<Integer>> parse(Path filePath) throws IOException
+  public Map<Integer, List<List<Integer>>> parse(Path filePath) throws IOException
   {
     final int[] symlinks = new int[150];
-    final Map<Integer, List<Integer>> disassembly = new HashMap<>();
+    final Map<Integer, List<List<Integer>>> allDisasm = new HashMap<>();
 
-    // assembly metadata ⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿼⿽⿻㇯⿾⿿〾
     try (Stream<String> lines = Files.lines(filePath)) 
     {
       lines.forEach(line -> {
@@ -48,65 +56,45 @@ public class IdsParser
 
         if(line.startsWith("#\t{"))
         {
-          parseSymlink(line, symlinks, disassembly);
+          parseSymlink(line, symlinks, allDisasm);
         }
         else if(line.startsWith("U+"))
         {
-          parseEntry(line, symlinks, disassembly);
+          parseEntry(line, symlinks, allDisasm);
         }
       });
     }
-
-    for(int i=0; i<symlinks.length; i++)
-    {
-      if(symlinks[i] != 0)
-      {
-        System.out.println(i +" -> " + Character.toString(symlinks[i]));
-      }
-    }
-
-    for(final Integer character: disassembly.keySet())
-    {
-      final StringBuilder sb = new StringBuilder();
-      sb.append(Character.toString(character)).append(" : ");
-      final List<Integer> parts = disassembly.get(character);
-      for(final Integer part : parts)
-      {
-        sb.append(Character.toString(part)).append(' ');
-      }
-      System.out.println(sb.toString());
-    }
-
-    // for(final Integer character : parts.keySet())
-    // {
-    //   final List<Integer> charParts = parts.get(character);
-    //   for(final Integer charPart : charParts)
-    //   {
-    //     if(parts.containsKey(charPart))
-    //     {
-    //       charParts.addAll(parts.get(charPart));
-    //     }
-    //   }
-    // }
-    return disassembly;
+    return allDisasm;
   }
 
-  private void parseEntry (String line, int[] symlinks, Map<Integer, List<Integer>> disassembly)
+  private void parseEntry (String line, int[] symlinks, Map<Integer, List<List<Integer>>> allDisasm)
   {
     final String[] tokens = line.split("\t");
     final int character = tokens[1].codePointAt(0);
-    final List<Integer> allParts = new ArrayList<>();
+
+    final Set<List<Integer>> allParts = new HashSet<>();
     for(int i=2; i<tokens.length; i++)
     {
       final String rawDisassembly = tokens[i];
       final int start = rawDisassembly.indexOf('^')+1;
       final int end = rawDisassembly.indexOf('$');
-      allParts.addAll(parseDisassembly(rawDisassembly, symlinks, start, end));
+      if(start == 0 || end == -1)
+      {
+        continue;
+      }
+      final List<Integer> singleDisasm = parseDisassembly(rawDisassembly, symlinks, start, end);
+      if(!singleDisasm.isEmpty() && !(singleDisasm.size() == 1 && (singleDisasm.get(0) == character)))
+      {
+        allParts.add(singleDisasm);
+      }
     }
-    disassembly.put(character, allParts);
+    if(!allParts.isEmpty())
+    {
+      allDisasm.put(character, new ArrayList<>(allParts));
+    }
   }
 
-  private void parseSymlink(String line, int[] symlinks, Map<Integer, List<Integer>> disassembly)
+  private void parseSymlink(String line, int[] symlinks, Map<Integer, List<List<Integer>>> disassembly)
   {
     final int curlyOpen = line.indexOf('{');
     final int curlyClose = line.indexOf('}');
@@ -137,7 +125,7 @@ public class IdsParser
     final List<Integer> symlinkParts = parseDisassembly(line, symlinks, lastBracket+2, line.length());
     if(!symlinkParts.isEmpty())
     {
-      disassembly.put(part, symlinkParts);
+      disassembly.put(part, List.of(symlinkParts));
     }
   }
 

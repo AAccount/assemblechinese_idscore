@@ -1,17 +1,86 @@
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import dt.idsparser.IdsParser;
+import dt.ids.DbService;
+import dt.ids.parser.IdsParser;
+import dt.ids.parser.IdsUtils;
 
 public class App 
 {
 	public static void main(String[] args) throws Exception 
 	{
 		final Path filePath = Paths.get("/home/daniel/workspace3/IDS.TXT");
-		//final Path filePath = Paths.get("/tmp/bad.txt");
-		final Map<Integer, List<Integer>> parts =new IdsParser().parse(filePath);
-		System.out.print("done");
+		// final Path filePath = Paths.get("/tmp/bad.txt");
+		final Map<Integer, List<List<Integer>>> disasm =new IdsParser().parse(filePath);
+		IdsUtils.breakdownDisasm(disasm);
+		final DbService dbService = new DbService();
+		dbService.saveIdsParse(disasm);
+
+
+    // entry(cpOf("㐅"), cpOf("x")),
+    // entry(cpOf("艹"), cpOf("*")), // mental hack shortcut of ++ (addition) to multiplication (*)
+		// entry(cpOf("阝"), cpOf("B")),
+    // entry(cpOf("丨"), cpOf("|")),
+    // entry(cpOf("丶"), cpOf("`")),
+    // entry(cpOf("𠆢"), cpOf("^"))
+    // entry(cpOf("幺"), cpOf("Z")) // "zig zag" one of the few original surviving names form 2017
+		
+		// final Map<Integer, Integer> partUsage = new HashMap<>();
+		// for(final int character : disasm.keySet())
+		// {
+		// 	for(final List<Integer> possibledism : disasm.get(character))
+		// 	{
+		// 		for(final int part : possibledism)
+		// 		{
+		// 		final int count = partUsage.getOrDefault(part, 0);
+		// 		partUsage.put(part, count+1);
+		// 		}
+		// 	}
+		// }
+
+		// Set<String> over100 = new HashSet<>();
+    // Map<Integer, Integer> sortedDesc = partUsage.entrySet().stream()
+    //    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+    //     .collect(Collectors.toMap(
+    //                     Map.Entry::getKey,
+    //                     Map.Entry::getValue,
+    //                     (e1, e2) -> e1,
+    //                     LinkedHashMap::new
+    //             ));		
+		// for(int key : sortedDesc.keySet())
+		// {
+		// 	if(sortedDesc.get(key) >= 100)
+		// 	{
+		// 		System.out.println(Character.toString(key) + " : " + sortedDesc.get(key));
+		// 		over100.add(Character.toString(key));
+		// 	}
+		// }
+
+		// Set<String> primitives = new HashSet<>();
+		// Set<String> commonPrimitive = new HashSet<>();
+
+		// for(final Integer character: disasm.keySet())
+    // {
+    //   final List<List<Integer>> disasms = disasm.get(character);
+    //   if(disasms.isEmpty())
+    //   {
+    //     System.out.println(Character.toString(character));
+		// 		primitives.add(Character.toString(character));
+		// 		if(over100.contains(Character.toString(character)))
+		// 		{
+		// 			commonPrimitive.add(Character.toString(character));
+		// 		}
+    //   }
+    // }
+		// System.out.println(commonPrimitive);
+		System.out.println("done");
 	}
 }
