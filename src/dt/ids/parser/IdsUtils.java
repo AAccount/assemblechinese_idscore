@@ -16,14 +16,6 @@ public class IdsUtils
 		final Map<Integer, List<List<Integer>>> originalRaw = deepClone(rawParse);
 		for(final int character : rawParse.keySet())
 		{
-			final boolean mainBlock = character >= 0x4E00 && character <= 0x9FFF;
-			final boolean aBlock = character >= 0x3400 && character <= 0x4DBF;
-			if(!mainBlock && !aBlock)
-			{
-				// These are obscure characters. Don't waste effort on them.
-				continue;
-			}
-
 			// System.out.println("Attempting further breakdown of " + Character.toString(character));
 			final List<List<Integer>> allExpansions = new ArrayList<>();
 			for(final List<Integer> disasm : rawParse.get(character))
