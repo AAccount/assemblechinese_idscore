@@ -26,7 +26,7 @@ public class IdsParser
     entry(cpOf("飠"), cpOf("食")),
     entry(cpOf("孑"), cpOf("子")),
     entry(cpOf("⺶"), cpOf("羊")), // entries below here are manually added
-    entry(cpOf("口"), cpOf("囗")),
+    entry(cpOf("囗"), cpOf("口")),
     entry(cpOf("⺼"), cpOf("月")),
     entry(cpOf("⺝"), cpOf("月")),
     entry(cpOf("土"), cpOf("士")),
@@ -71,6 +71,10 @@ public class IdsParser
   {
     final String[] tokens = line.split("\t");
     final int character = tokens[1].codePointAt(0);
+    if(isObscure(character))
+    {
+      return;
+    }
 
     final Set<List<Integer>> allParts = new HashSet<>();
     for(int i=2; i<tokens.length; i++)
@@ -92,6 +96,13 @@ public class IdsParser
     {
       allDisasm.put(character, new ArrayList<>(allParts));
     }
+  }
+
+  private boolean isObscure(int character)
+  {
+    final boolean mainBlock = character >= 0x4E00 && character <= 0x9FFF;
+		final boolean aBlock = character >= 0x3400 && character <= 0x4DBF;
+		return !(mainBlock || aBlock);
   }
 
   private void parseSymlink(String line, int[] symlinks, Map<Integer, List<List<Integer>>> disassembly)
@@ -125,7 +136,9 @@ public class IdsParser
     final List<Integer> symlinkParts = parseDisassembly(line, symlinks, lastBracket+2, line.length());
     if(!symlinkParts.isEmpty())
     {
-      disassembly.put(part, List.of(symlinkParts));
+      final List<List<Integer>> result = new ArrayList<>();
+      result.add(symlinkParts);
+      disassembly.put(part, result);
     }
   }
 
