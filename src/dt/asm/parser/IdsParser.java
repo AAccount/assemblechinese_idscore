@@ -1,4 +1,4 @@
-package dt.ids.parser;
+package dt.asm.parser;
 
 import java.io.IOException;
 import java.nio.file.Files;

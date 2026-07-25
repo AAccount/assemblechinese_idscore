@@ -1,4 +1,4 @@
-package dt.ids.parser;
+package dt.asm.parser;
 
 import java.util.ArrayList;
 import java.util.HashMap;

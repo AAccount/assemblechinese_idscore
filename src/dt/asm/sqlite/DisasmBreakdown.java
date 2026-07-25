@@ -1,4 +1,4 @@
-package dt.ids.sqlite;
+package dt.asm.sqlite;
 
 import java.util.Map;
 

@@ -10,11 +10,11 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import dt.ids.DbService;
-import dt.ids.parser.IdsParser;
-import dt.ids.parser.IdsUtils;
+import dt.asm.DbService;
+import dt.asm.parser.IdsParser;
+import dt.asm.parser.IdsUtils;
 
-public class App 
+public class Tester 
 {
 	public static void main(String[] args) throws Exception 
 	{
