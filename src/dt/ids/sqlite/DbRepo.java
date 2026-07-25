@@ -25,21 +25,82 @@ public class DbRepo
 
 	public DbRepo() throws SQLException, ClassNotFoundException
 	{
-		// final String sqlitePath = System.getProperty("user.home") + "/Programs/mdbg2_1.sqlite";
-		final String sqlitePath = "/tmp/ids.sqlite";
+		final String sqlitePath = System.getProperty("user.home") + "/Programs/ids.sqlite";
+		// final String sqlitePath = "/tmp/ids.sqlite";
 		Class.forName("org.sqlite.JDBC");
 		this.db = DriverManager.getConnection("jdbc:sqlite:"+sqlitePath);
 		db.setAutoCommit(false);
 	}
 
-	public List<String> findMatch(Map<String, Integer> searchFreq)
+	public List<String> lookupByParts(Map<String, Integer> searchFreq) throws SQLException
 	{
 		final List<String> results = new ArrayList<>();
 		final String baseSelect = String.format("""
-				select DISTINCT Disassembly.character 
-from Disassembly join Parts on Disassembly.id = Parts.disassemblyId
-where part = "日"
-				""", TABLE_DISASM)	;
+			select DISTINCT %s.%s
+			from %s join %s on %s.%s = %s.%s
+			where %s = ? and %s >= ?
+				""", TABLE_DISASM, COL_DISASM_CHAR,
+				TABLE_DISASM, TABLE_PARTS, TABLE_DISASM, COL_DISASM_ID, TABLE_PARTS, COL_PARTS_DISASMID,
+				COL_PARTS_PART, COL_PARTS_COUNT);
+		final String INTERSECT = "\nINTERSECT\n";
+
+		final StringBuilder sb = new StringBuilder();
+		int added = 0;
+		for(final String part : searchFreq.keySet())
+		{
+			sb.append(baseSelect);
+			added++;
+			if(added < searchFreq.size())
+			{
+				sb.append(INTERSECT);
+			}
+		}
+
+		final String sql = sb.toString();
+		try(final PreparedStatement pstLookup = db.prepareStatement(sql))
+		{
+			int prepped = 1;
+			for(final String part : searchFreq.keySet())
+			{
+				pstLookup.setString(prepped, part);
+				pstLookup.setInt(++prepped, searchFreq.get(part));
+				prepped++;
+			}
+
+			try(final ResultSet rs = pstLookup.executeQuery())
+			{
+				while(rs.next())
+				{
+					results.add(rs.getString(COL_DISASM_CHAR));
+				}
+			}
+		}
+
+		return results;
+	}
+
+	public List<String> getParts(String character) throws SQLException
+	{
+		final List<String> results = new ArrayList<>();
+		final String sql = String.format("""
+			select DISTINCT %s.%s 
+			from %s join %s on %s.%s = %s.%s
+			where %s.%s = ?
+		""", TABLE_PARTS, COL_PARTS_PART,
+			TABLE_PARTS, TABLE_DISASM, TABLE_PARTS, COL_PARTS_DISASMID, TABLE_DISASM, COL_DISASM_ID,
+			TABLE_DISASM, COL_DISASM_CHAR);
+		
+		try(final PreparedStatement pstParts = db.prepareStatement(sql))
+		{
+			pstParts.setString(1, character);
+			try(final ResultSet rs = pstParts.executeQuery())
+			{
+				while(rs.next())
+				{
+					results.add(rs.getString(COL_PARTS_PART));
+				}
+			}
+		}
 		return results;
 	}
 
@@ -133,5 +194,15 @@ where part = "日"
 			}
 		}
 		db.commit();
+	}
+	
+	private int disasmWithMostParts(List<DisasmBreakdown> breakdowns)
+	{
+		int max = -1;
+		for(final DisasmBreakdown breakdown : breakdowns)
+		{
+			max = Math.max(max, breakdown.totalParts());
+		}
+		return max;
 	}
 }

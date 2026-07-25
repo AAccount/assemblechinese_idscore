@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-import static java.util.Map.entry; // Static import makes the code cleaner
 
 public class IdsParser 
 {
@@ -18,21 +17,21 @@ public class IdsParser
   
   // Creating 2 separate versions of the same part may be useful for font rendering, but not for visual assembly purposes.
   private static final Map<Integer, Integer> PART_SWAP = Map.ofEntries(
-    entry(cpOf("牜"), cpOf("牛")),
-    entry(cpOf("𤣩"), cpOf("王")),
-    entry(cpOf("糹"), cpOf("糸")),
-    entry(cpOf("訁"), cpOf("言")),
-    entry(cpOf("釒"), cpOf("金")),
-    entry(cpOf("飠"), cpOf("食")),
-    entry(cpOf("孑"), cpOf("子")),
-    entry(cpOf("⺶"), cpOf("羊")), // entries below here are manually added
-    entry(cpOf("囗"), cpOf("口")),
-    entry(cpOf("⺼"), cpOf("月")),
-    entry(cpOf("⺝"), cpOf("月")),
-    entry(cpOf("土"), cpOf("士")),
-    entry(cpOf("𫜹"), cpOf("")), // there are 3 of these including symlink 42 and 43. using 42 
-    entry(cpOf("卝"), cpOf("艹")), // ++ variant used in　罐 and other non plant related
-    entry(cpOf("𠕁"), cpOf("冊"))
+    Map.entry(cpOf("牜"), cpOf("牛")),
+    Map.entry(cpOf("𤣩"), cpOf("王")),
+    Map.entry(cpOf("糹"), cpOf("糸")),
+    Map.entry(cpOf("訁"), cpOf("言")),
+    Map.entry(cpOf("釒"), cpOf("金")),
+    Map.entry(cpOf("飠"), cpOf("食")),
+    Map.entry(cpOf("孑"), cpOf("子")),
+    Map.entry(cpOf("⺶"), cpOf("羊")), // entries below here are manually added
+    Map.entry(cpOf("囗"), cpOf("口")),
+    Map.entry(cpOf("⺼"), cpOf("月")),
+    Map.entry(cpOf("⺝"), cpOf("月")),
+    Map.entry(cpOf("土"), cpOf("士")),
+    Map.entry(cpOf("𫜹"), cpOf("")), // there are 3 of these including symlink 42 and 43. using 42 
+    Map.entry(cpOf("卝"), cpOf("艹")), // ++ variant used in　罐 and other non plant related
+    Map.entry(cpOf("𠕁"), cpOf("冊"))
   );
   private static final int NO_DISASSEMBLY = cpOf("？");
   static
