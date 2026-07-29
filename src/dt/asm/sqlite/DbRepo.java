@@ -1,5 +1,6 @@
 package dt.asm.sqlite;
 
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -25,7 +26,7 @@ public class DbRepo
 
 	public DbRepo() throws SQLException, ClassNotFoundException
 	{
-		final String sqlitePath = System.getProperty("user.home") + "/Programs/ids.sqlite";
+		final Path sqlitePath = Path.of(System.getProperty("user.home"), "Programs", "ids.sqlite");
 		// final String sqlitePath = "/tmp/ids.sqlite";
 		Class.forName("org.sqlite.JDBC");
 		this.db = DriverManager.getConnection("jdbc:sqlite:"+sqlitePath);
