@@ -196,14 +196,4 @@ public class DbRepo
 		}
 		db.commit();
 	}
-	
-	private int disasmWithMostParts(List<DisasmBreakdown> breakdowns)
-	{
-		int max = -1;
-		for(final DisasmBreakdown breakdown : breakdowns)
-		{
-			max = Math.max(max, breakdown.totalParts());
-		}
-		return max;
-	}
 }

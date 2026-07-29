@@ -1,18 +1,8 @@
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import dt.asm.DbService;
-import dt.asm.parser.IdsParser;
-import dt.asm.parser.IdsUtils;
 
 public class Tester 
 {
