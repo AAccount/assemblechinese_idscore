@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import dt.asm.sqlite.DisasmBreakdown;
 
 public class DbService 
 {
+	private static final Logger logger = Logger.getLogger(DbService.class.getName());
   private static final Map<String, String> SHORTHAND = Map.ofEntries(
 		Map.entry(" ", ""),
 		Map.entry("x", "㐅"),
@@ -50,7 +52,7 @@ public class DbService
 		final int[] codepoints = chinese.codePoints().toArray();
 		if(codepoints.length > 1)
 		{
-			System.out.println("more than 1 character, only checking the first " + chinese);
+			logger.info("more than 1 character, only checking the first " + chinese);
 		}
 		return db.getParts(Character.toString(codepoints[0]));
 	}

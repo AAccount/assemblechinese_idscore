@@ -2,6 +2,7 @@ package dt.asm.parser;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,10 +10,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
+
 
 public class IdsParser 
 {
+  private static final Logger logger = Logger.getLogger(IdsParser.class.getName());
   private final static Set<Integer> POS_METADATA = new HashSet<>();
   
   // Creating 2 separate versions of the same part may be useful for font rendering, but not for visual assembly purposes.
@@ -40,8 +44,16 @@ public class IdsParser
     metadata.codePoints().forEach(cp -> POS_METADATA.add(cp));
   }
 
-  public Map<Integer, List<List<Integer>>> parse(Path filePath) throws IOException
+  public Map<Integer, List<List<Integer>>> parse(Path rawPath) throws IOException
   {
+    logger.info("raw path \"" + rawPath.toAbsolutePath().toString() + "\"");
+    final Path filePath = Path.of(rawPath.toAbsolutePath().toString().strip());
+    if(!Files.exists(filePath) || Files.size(filePath) == 0)
+    {
+      logger.severe(filePath.toAbsolutePath().toString() + " doesn't exist or is empty");
+      throw new InvalidPathException(filePath.toAbsolutePath().toString(), "file does not exist or is empty");
+    }
+
     final int[] symlinks = new int[150];
     final Map<Integer, List<List<Integer>>> allDisasm = new HashMap<>();
 
