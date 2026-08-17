@@ -11,9 +11,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class DbRepo 
 {
+	private static final Logger logger = Logger.getLogger(DbRepo.class.getName());
+
 	private static final String TABLE_DISASM = "Disassembly";
 	private static final String COL_DISASM_ID = "id";
 	private static final String COL_DISASM_CHAR = "character";
@@ -27,14 +30,18 @@ public class DbRepo
 
 	public DbRepo() throws SQLException, ClassNotFoundException
 	{
-		final Path sqlitePath = Path.of(System.getProperty("user.home"), "Programs", "ids.sqlite");
-		final File parentDir = sqlitePath.getParent().toFile();
+		final Path fullPath = Path.of(System.getProperty("user.home"), "Programs", "ids.sqlite");
+		final File parentDir = fullPath.getParent().toFile();
 		if(!parentDir.exists()) 
 		{
 			parentDir.mkdirs(); 
 		}
-		// final String sqlitePath = "/tmp/ids.sqlite";
-		Class.forName("org.sqlite.JDBC");
+		
+		final String envSqlitePath = System.getenv("DATABASE_URL");
+		logger.info("got database path from environment variabe: '" + envSqlitePath + "'");		Class.forName("org.sqlite.JDBC");
+		final String sqlitePath = (envSqlitePath != null && !envSqlitePath.isBlank()) ? envSqlitePath : fullPath.toString();
+		logger.info("using database path: " + sqlitePath);
+
 		this.db = DriverManager.getConnection("jdbc:sqlite:"+sqlitePath);
 		db.setAutoCommit(false);
 	}
