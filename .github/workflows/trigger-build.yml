@@ -1,0 +1,17 @@
+name: Trigger Frontend Build
+
+on:
+  push:
+    branches:
+      - master
+jobs:
+  ping-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Frontend Repo
+        run: |
+          curl -H "Authorization: token ${{ secrets.BUILD_TRIGGER_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               -X POST \
+               -d '{"event_type": "dependency_updated"}' \
+               https://github.com
