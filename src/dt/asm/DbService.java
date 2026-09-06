@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import dt.asm.parser.IdsUtils;
 import dt.asm.sqlite.DbRepo;
 import dt.asm.sqlite.DisasmBreakdown;
 
@@ -86,6 +87,7 @@ public class DbService
 
 	public void saveIdsParse(Map<Integer, List<List<Integer>>> rawParse) throws SQLException
 	{
+		IdsUtils.breakdownDisasm2(rawParse);
 		db.wipe();
 		db.init();
 		db.writeDb(converRawParseToBreakdown(rawParse));
