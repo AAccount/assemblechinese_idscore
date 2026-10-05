@@ -35,7 +35,8 @@ public class IdsParser
     Map.entry(cpOf("土"), cpOf("士")),
     Map.entry(cpOf("𫜹"), cpOf("")), // there are 3 of these including symlink 42 and 43. using 42 
     Map.entry(cpOf("卝"), cpOf("艹")), // ++ variant used in　罐 and other non plant related
-    Map.entry(cpOf("𠕁"), cpOf("冊"))
+    Map.entry(cpOf("𠕁"), cpOf("冊")),
+    Map.entry(cpOf("夭"), cpOf("天"))
   );
   private static final int NO_DISASSEMBLY = cpOf("？");
   static
