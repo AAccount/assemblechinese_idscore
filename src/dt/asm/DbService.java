@@ -27,7 +27,8 @@ public class DbService
 		Map.entry("|", "丨"),
 		Map.entry("\\", "丶"),
 		Map.entry("^", "𠆢"),
-		Map.entry("zigzag", "幺") // few surviving original nicknames from 2017
+		Map.entry("zigzag", "幺"), // few surviving original nicknames from 2017
+		Map.entry("i", "讠")
 	);
 
 	private final DbRepo db;
